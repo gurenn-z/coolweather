@@ -10,9 +10,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.gurenn.coolweather.R;
+import com.gurenn.coolweather.service.AutoUpdateService;
 import com.gurenn.coolweather.util.HttpCallbackListener;
 import com.gurenn.coolweather.util.HttpUtil;
 import com.gurenn.coolweather.util.Utility;
@@ -166,6 +166,9 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
         mCurrentDateText.setText(sp.getString("current_date", ""));
         mWeatherInfoLayout.setVisibility(View.VISIBLE);
         mCityNameText.setVisibility(View.VISIBLE);
+
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 
     @Override

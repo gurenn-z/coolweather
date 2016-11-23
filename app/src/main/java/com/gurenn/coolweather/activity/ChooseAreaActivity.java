@@ -194,7 +194,8 @@ public class ChooseAreaActivity extends AppCompatActivity {
         if (!TextUtils.isEmpty(code)) {
             address = "http://www.weather.com.cn/data/list3/city" + code + ".xml";
         } else {
-            address = "http://www.weather.com.cn/data/list3/city.xml";
+//            address = "http://www.weather.com.cn/data/list3/city.xml";
+            address = "http://v.juhe.cn/weather/index";
         }
         showProgressDialog();
 
