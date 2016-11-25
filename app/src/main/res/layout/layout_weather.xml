@@ -104,6 +104,14 @@
             </LinearLayout>
 
         </LinearLayout>
-
+        <TextView
+            android:id="@+id/tv_error"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="访问服务器失败，出错啦!"
+            android:textColor="#fff"
+            android:textSize="36sp"
+            android:visibility="gone"/>
     </RelativeLayout>
 </LinearLayout>

@@ -109,7 +109,7 @@ public class Utility {
                 JSONObject todayWeather = jsonObject.getJSONObject("result").getJSONObject("today");
                 JSONObject skWeather = jsonObject.getJSONObject("result").getJSONObject("sk");
                 String cityName = todayWeather.getString("city");
-                String publishTime = skWeather.getString("time");
+                String publishTime = "今日" + skWeather.getString("time") + "发布";
                 String currentDate = todayWeather.getString("date_y")
                         + "\t" + todayWeather.getString("week");
                 String weatherDesp = todayWeather.getString("weather");
@@ -120,17 +120,8 @@ public class Utility {
 
                 saveWeatherInfo(context, cityName, publishTime, currentDate,
                         weatherDesp, temp1, temp2);
-
             } else {
-                String cityName = resultCode + "\t" + errorCode;
-                String publishTime = response;
-                String currentDate = "currentDate";
-                String weatherDesp = "weatherDesp";
-                String temp1 = "temp1";
-                String temp2 = "temp2";
-
-                saveWeatherInfo(context, cityName, publishTime, currentDate,
-                        weatherDesp, temp1, temp2);
+                saveWeatherInfo(context, "", "", "", "", "", "");
             }
         } catch (JSONException e) {
             e.printStackTrace();

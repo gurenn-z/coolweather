@@ -57,6 +57,10 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
      * 更新天气按钮
      */
     private Button mRefreshWeatherBtn;
+    /**
+     * 用于显示当查询天气失败时的错误信息
+     */
+    private TextView mErrorText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +74,6 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
         if (!TextUtils.isEmpty(countyName)) {
             mPublishText.setText("同步中");
             mWeatherInfoLayout.setVisibility(View.INVISIBLE);
-            mCityNameText.setVisibility(View.INVISIBLE);
         } else {
             showWeather();
         }
@@ -92,6 +95,7 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
         mSwitchCityBtn.setOnClickListener(this);
         mRefreshWeatherBtn = (Button) findViewById(R.id.btn_refresh_weather);
         mRefreshWeatherBtn.setOnClickListener(this);
+        mErrorText = (TextView) findViewById(R.id.tv_error);
     }
 
     /**
@@ -137,15 +141,19 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
      */
     private void showWeather() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        mCityNameText.setText(sp.getString("city_name", ""));
-        mTemp1Text.setText(sp.getString("temp1", ""));
-        mTemp2Text.setText(sp.getString("temp2", ""));
-        mWeatherDespText.setText(sp.getString("weather_desp", ""));
-        mPublishText.setText("今日" + sp.getString("publish_time", "") + "发布");
-        mCurrentDateText.setText(sp.getString("current_date", ""));
-        mWeatherInfoLayout.setVisibility(View.VISIBLE);
-        mCityNameText.setVisibility(View.VISIBLE);
-
+        if (sp.getString("city_name", "").equals("")) {
+            mErrorText.setVisibility(View.VISIBLE);
+            mWeatherInfoLayout.setVisibility(View.GONE);
+        } else {
+            mCityNameText.setText(sp.getString("city_name", ""));
+            mTemp1Text.setText(sp.getString("temp1", ""));
+            mTemp2Text.setText(sp.getString("temp2", ""));
+            mWeatherDespText.setText(sp.getString("weather_desp", ""));
+            mPublishText.setText(sp.getString("publish_time", ""));
+            mCurrentDateText.setText(sp.getString("current_date", ""));
+            mWeatherInfoLayout.setVisibility(View.VISIBLE);
+            mErrorText.setVisibility(View.GONE);
+        }
         Intent intent = new Intent(this, AutoUpdateService.class);
         startService(intent);
     }
