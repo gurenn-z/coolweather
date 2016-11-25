@@ -8,12 +8,14 @@ import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 import com.gurenn.coolweather.receiver.AutoUpdateReceiver;
 import com.gurenn.coolweather.util.HttpCallbackListener;
 import com.gurenn.coolweather.util.HttpUtil;
 import com.gurenn.coolweather.util.Utility;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 
 public class AutoUpdateService extends Service {
@@ -48,8 +50,16 @@ public class AutoUpdateService extends Service {
      */
     private void updateWeather() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        String weatherCode = sp.getString("weather_code", "");
-        String address = "http://www.weather.com.cn/data/cityinfo/" + weatherCode + ".html";
+        String cityName = sp.getString("city_name", "");
+        String address = null;
+        try {
+            address = "http://v.juhe.cn/weather/index?"
+                    + "cityname=" + URLEncoder.encode(cityName, "utf-8")
+                    + "&key=2e04850980b6304c62bb397daa208764";
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        ;
         HttpUtil.sendHttpRequest(address, new HttpCallbackListener() {
             @Override
             public void onFinish(String response) {

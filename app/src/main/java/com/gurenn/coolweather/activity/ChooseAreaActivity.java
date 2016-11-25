@@ -66,46 +66,43 @@ public class ChooseAreaActivity extends AppCompatActivity {
      */
     private int currentLevel;
     /**
-     * 是否从WeatherActivity中跳转过来
-     */
-    private boolean isFromWeatherActivity;
+     * 记录点击ListView中item项进行城市切换时上一个城市级别的位置，
+     * 使从WeatherActivity跳转回来时返回到上一个城市级别，而不是主界面
+      */
+    private int[] selectedPos = new int[3];
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_choose_area);
-
-        isFromWeatherActivity = getIntent().getBooleanExtra("from_weather_activity", false);
-
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        // 已经选择了城市且不是从WeatherActivity跳转过来，才会直接跳转到WeatherActivity
-        if (sp.getBoolean("city_selected", false) && !isFromWeatherActivity) {
-            Intent intent = new Intent(this, WeatherActivity.class);
-            startActivity(intent);
-            finish();
-            return;
-        }
-
         // 初始化控件
         initView();
-
+        // ListView点击事件
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView,
                                     View view, int i, long l) {
                 if (currentLevel == LEVEL_PROVINCE) {
                     selectedProvince = provinceList.get(i);
+                    // 记录当前省份位置
+                    selectedPos[0] = i;
                     // 查询选中省内所有的市
                     queryCities();
                 } else if (currentLevel == LEVEL_CITY) {
                     selectedCity = cityList.get(i);
+                    // 记录当前城市位置
+                    selectedPos[1] = i;
                     // 查询选中市内所有的县
                     queryCounties();
                 } else if (currentLevel == LEVEL_COUNTY) {
-                    String countyCode = countyList.get(i).getCountyCode();
+                    String countyName = countyList.get(i).getCountyName();
+                    // 记录当前县位置
+                    selectedPos[2] = i;
                     Intent intent = new Intent(ChooseAreaActivity.this, WeatherActivity.class);
-                    intent.putExtra("county_code", countyCode);
+                    intent.putExtra("county_name", countyName);
+                    // 保存位置记录，使从WeatherActivity跳转回来时，正好显示当前县界面
+                    intent.putExtra("position", selectedPos);
                     startActivity(intent);
                     finish();
                 }
@@ -114,6 +111,17 @@ public class ChooseAreaActivity extends AppCompatActivity {
 
         // 加载省级数据
         queryProvinces();
+
+        // 判断是否从WeatherActivity界面跳转过来，如果是，返回当前县级别数据
+        if (getIntent().getBooleanExtra("from_weather_activity", false)) {
+            int[] pos = getIntent().getIntArrayExtra("pos");
+            // 查询选中省内所有的市
+            selectedProvince = provinceList.get(pos[0]);
+            queryCities();
+            // 查询选中市内所有的县
+            selectedCity = cityList.get(pos[1]);
+            queryCounties();
+        }
     }
 
     /**
@@ -279,10 +287,6 @@ public class ChooseAreaActivity extends AppCompatActivity {
         } else if (currentLevel == LEVEL_CITY) {
             queryProvinces();
         } else {
-            if (isFromWeatherActivity) {
-                Intent intent = new Intent(this, WeatherActivity.class);
-                startActivity(intent);
-            }
             finish();
         }
     }

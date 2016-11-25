@@ -14,10 +14,6 @@ import com.gurenn.coolweather.model.Province;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
 public class Utility {
 
     /**
@@ -107,15 +103,35 @@ public class Utility {
     public static void handleWeatherResponse(Context context, String response) {
         try {
             JSONObject jsonObject = new JSONObject(response);
-            JSONObject weatherInfo = jsonObject.getJSONObject("weatherinfo");
-            String cityName = weatherInfo.getString("city");
-            String weatherCode = weatherInfo.getString("cityid");
-            String temp1 = weatherInfo.getString("temp1");
-            String temp2 = weatherInfo.getString("temp2");
-            String weatherDesp = weatherInfo.getString("weather");
-            String publishTime = weatherInfo.getString("ptime");
-            saveWeatherInfo(context, cityName, weatherCode, temp1, temp2,
-                    weatherDesp, publishTime);
+            String resultCode = jsonObject.getString("resultcode");
+            int errorCode = jsonObject.getInt("error_code");
+            if (resultCode != null && resultCode.equals("200")) {
+                JSONObject todayWeather = jsonObject.getJSONObject("result").getJSONObject("today");
+                JSONObject skWeather = jsonObject.getJSONObject("result").getJSONObject("sk");
+                String cityName = todayWeather.getString("city");
+                String publishTime = skWeather.getString("time");
+                String currentDate = todayWeather.getString("date_y")
+                        + "\t" + todayWeather.getString("week");
+                String weatherDesp = todayWeather.getString("weather");
+
+                String[] tempArr = todayWeather.getString("temperature").split("~");
+                String temp1 = tempArr[0].substring(0, tempArr[0].indexOf("℃")) + "℃";
+                String temp2 = tempArr[1].substring(0, tempArr[1].indexOf("℃")) + "℃";
+
+                saveWeatherInfo(context, cityName, publishTime, currentDate,
+                        weatherDesp, temp1, temp2);
+
+            } else {
+                String cityName = resultCode + "\t" + errorCode;
+                String publishTime = response;
+                String currentDate = "currentDate";
+                String weatherDesp = "weatherDesp";
+                String temp1 = "temp1";
+                String temp2 = "temp2";
+
+                saveWeatherInfo(context, cityName, publishTime, currentDate,
+                        weatherDesp, temp1, temp2);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -125,27 +141,23 @@ public class Utility {
      * 将服务器返回的所有天气信息存储到SharedPreferences文件中
      * @param context
      * @param cityName
-     * @param weatherCode
+     * @param publishTime
+     * @param currentDate
+     * @param weatherDesp
      * @param temp1
      * @param temp2
-     * @param weatherDesp
-     * @param publishTime
      */
-    private static void saveWeatherInfo(Context context, String cityName,
-                                        String weatherCode, String temp1,
-                                        String temp2, String weatherDesp,
-                                        String publishTime) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月d日", Locale.CHINA);
-        SharedPreferences.Editor editor = PreferenceManager.
-                getDefaultSharedPreferences(context).edit();
-        editor.putBoolean("city_selected", true);
+    private static void saveWeatherInfo(Context context, String cityName, String publishTime,
+                                        String currentDate, String weatherDesp,
+                                        String temp1, String temp2) {
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context)
+                .edit();
         editor.putString("city_name", cityName);
-        editor.putString("weather_code", weatherCode);
+        editor.putString("publish_time", publishTime);
+        editor.putString("current_date", currentDate);
+        editor.putString("weather_desp", weatherDesp);
         editor.putString("temp1", temp1);
         editor.putString("temp2", temp2);
-        editor.putString("weather_desp", weatherDesp);
-        editor.putString("publish_time", publishTime);
-        editor.putString("current_date", sdf.format(new Date()));
         editor.commit();
     }
 }

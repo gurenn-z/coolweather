@@ -17,10 +17,14 @@ import com.gurenn.coolweather.util.HttpCallbackListener;
 import com.gurenn.coolweather.util.HttpUtil;
 import com.gurenn.coolweather.util.Utility;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 
 public class WeatherActivity extends AppCompatActivity implements View.OnClickListener{
 
     private LinearLayout mWeatherInfoLayout;
+
     /**
      * 用于显示城市名
      */
@@ -62,17 +66,15 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
         // 初始化各控件
         initView();
 
-        String countyCode = getIntent().getStringExtra("county_code");
-        if (!TextUtils.isEmpty(countyCode)) {
-            // 有县级代号时就去查询天气
-            mPublishText.setText("同步中...");
+        String countyName = getIntent().getStringExtra("county_name");
+        if (!TextUtils.isEmpty(countyName)) {
+            mPublishText.setText("同步中");
             mWeatherInfoLayout.setVisibility(View.INVISIBLE);
             mCityNameText.setVisibility(View.INVISIBLE);
-            queryWeatherCode(countyCode);
         } else {
-            // 没有县级代号时就直接显示本地天气
             showWeather();
         }
+        queryWeatherInfo(countyName);
     }
 
     /**
@@ -93,56 +95,33 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     /**
-     * 查询县级代号所对应的天气代号
-     * @param countyCode
+     * 根据传入的城市名查询天气信息
+     * @param cityName
      */
-    private void queryWeatherCode(String countyCode) {
-        String address = "http://www.weather.com.cn/data/list3/city" + countyCode + ".xml";
-        queryFromServer(address, "countyCode");
-    }
+    private void queryWeatherInfo(String cityName) {
 
-    /**
-     * 查询天气代号所对应的天气
-     * @param weatherCode
-     */
-    private void queryWeatherInfo(String weatherCode) {
-        String address = "http://www.weather.com.cn/data/cityinfo/" + weatherCode + ".html";
-        queryFromServer(address, "weatherCode");
-    }
-
-    /**
-     * 根据传入的地址和类型去向服务器查询天气代号或者天气信息
-     * @param address
-     * @param type
-     */
-    private void queryFromServer(final String address, final String type) {
+        String address = null;
+        try {
+            address = "http://v.juhe.cn/weather/index?"
+                    + "cityname=" + URLEncoder.encode(cityName, "utf-8")
+                    + "&key=2e04850980b6304c62bb397daa208764";
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         HttpUtil.sendHttpRequest(address, new HttpCallbackListener() {
             @Override
             public void onFinish(String response) {
-                if ("countyCode".equals(type)) {
-                    if (!TextUtils.isEmpty(response)) {
-                        // 从服务器返回的数据中解析出天气代号
-                        String[] array = response.split("\\|");
-                        if (array != null && array.length == 2) {
-                            String weatherCode = array[1];
-                            queryWeatherInfo(weatherCode);
-                        }
+                Utility.handleWeatherResponse(WeatherActivity.this, response);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showWeather();
                     }
-                } else if ("weatherCode".equals(type)) {
-                    // 处理从服务器返回的天气信息
-                    Utility.handleWeatherResponse(WeatherActivity.this, response);
-
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            showWeather();
-                        }
-                    });
-                }
+                });
             }
 
             @Override
-            public void onError(Exception e) {
+            public void onError(final Exception e) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -162,7 +141,7 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
         mTemp1Text.setText(sp.getString("temp1", ""));
         mTemp2Text.setText(sp.getString("temp2", ""));
         mWeatherDespText.setText(sp.getString("weather_desp", ""));
-        mPublishText.setText("今天" + sp.getString("publish_time", "") + "发布");
+        mPublishText.setText("今日" + sp.getString("publish_time", "") + "发布");
         mCurrentDateText.setText(sp.getString("current_date", ""));
         mWeatherInfoLayout.setVisibility(View.VISIBLE);
         mCityNameText.setVisibility(View.VISIBLE);
@@ -175,20 +154,28 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_switch_city:
-                Intent intent = new Intent(this, ChooseAreaActivity.class);
-                intent.putExtra("from_weather_activity", true);
+                Intent intent = new Intent(WeatherActivity.this, ChooseAreaActivity.class);
                 startActivity(intent);
                 finish();
                 break;
             case R.id.btn_refresh_weather:
                 mPublishText.setText("同步中...");
                 SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-                String weatherCode = sp.getString("weather_code", "");
-                if (!TextUtils.isEmpty(weatherCode)) {
-                    queryWeatherInfo(weatherCode);
+                String weatherCity = sp.getString("city_name", "");
+                if (!TextUtils.isEmpty(weatherCity)) {
+                    queryWeatherInfo(weatherCity);
                 }
                 break;
             default:break;
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(WeatherActivity.this, ChooseAreaActivity.class);
+        intent.putExtra("from_weather_activity", true);
+        intent.putExtra("pos", getIntent().getIntArrayExtra("position"));
+        startActivity(intent);
+        finish();
     }
 }
