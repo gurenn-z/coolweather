@@ -2,9 +2,7 @@ package com.gurenn.coolweather.activity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
@@ -78,6 +76,7 @@ public class ChooseAreaActivity extends AppCompatActivity {
         setContentView(R.layout.layout_choose_area);
         // 初始化控件
         initView();
+
         // ListView点击事件
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

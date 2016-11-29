@@ -105,10 +105,19 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
     private void queryWeatherInfo(String cityName) {
 
         String address = null;
+//        try {
+//            address = "http://v.juhe.cn/weather/index?"
+//                    + "cityname=" + URLEncoder.encode(cityName, "utf-8")
+//                    + "&key=2e04850980b6304c62bb397daa208764";
+//        } catch (UnsupportedEncodingException e) {
+//            e.printStackTrace();
+//        }
         try {
-            address = "http://v.juhe.cn/weather/index?"
-                    + "cityname=" + URLEncoder.encode(cityName, "utf-8")
-                    + "&key=2e04850980b6304c62bb397daa208764";
+            address = "http://ali-weather.showapi.com/area-to-weather"
+                    + "?area=" + URLEncoder.encode(cityName, "utf-8")
+                    + "&needAlarm=1"
+                    + "&needIndex=1"
+                    + "&needMoreDay=1";
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -141,19 +150,27 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
      */
     private void showWeather() {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        if (sp.getString("city_name", "").equals("")) {
-            mErrorText.setVisibility(View.VISIBLE);
-            mWeatherInfoLayout.setVisibility(View.GONE);
-        } else {
-            mCityNameText.setText(sp.getString("city_name", ""));
-            mTemp1Text.setText(sp.getString("temp1", ""));
-            mTemp2Text.setText(sp.getString("temp2", ""));
-            mWeatherDespText.setText(sp.getString("weather_desp", ""));
-            mPublishText.setText(sp.getString("publish_time", ""));
-            mCurrentDateText.setText(sp.getString("current_date", ""));
-            mWeatherInfoLayout.setVisibility(View.VISIBLE);
-            mErrorText.setVisibility(View.GONE);
-        }
+        mCityNameText.setText(sp.getString("city_name", ""));
+        mTemp1Text.setText(sp.getString("temp1", ""));
+        mTemp2Text.setText(sp.getString("temp2", ""));
+        mWeatherDespText.setText(sp.getString("weather_desp", ""));
+        mPublishText.setText(sp.getString("publish_time", ""));
+        mCurrentDateText.setText(sp.getString("current_date", ""));
+        mWeatherInfoLayout.setVisibility(View.VISIBLE);
+        mErrorText.setVisibility(View.GONE);
+//        if (sp.getString("city_name", "").equals("")) {
+//            mErrorText.setVisibility(View.VISIBLE);
+//            mWeatherInfoLayout.setVisibility(View.GONE);
+//        } else {
+//            mCityNameText.setText(sp.getString("city_name", ""));
+//            mTemp1Text.setText(sp.getString("temp1", ""));
+//            mTemp2Text.setText(sp.getString("temp2", ""));
+//            mWeatherDespText.setText(sp.getString("weather_desp", ""));
+//            mPublishText.setText(sp.getString("publish_time", ""));
+//            mCurrentDateText.setText(sp.getString("current_date", ""));
+//            mWeatherInfoLayout.setVisibility(View.VISIBLE);
+//            mErrorText.setVisibility(View.GONE);
+//        }
         Intent intent = new Intent(this, AutoUpdateService.class);
         startService(intent);
     }

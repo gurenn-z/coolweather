@@ -19,6 +19,7 @@ public class HttpUtil {
                     URL url = new URL(address);
                     connection = (HttpURLConnection) url.openConnection();
                     connection.setRequestMethod("GET");
+                    connection.setRequestProperty("Authorization", "APPCODE 1079173331fb4f77a7f7c41174fed299");
                     connection.setConnectTimeout(8000);
                     connection.setReadTimeout(8000);
                     InputStream in = connection.getInputStream();
